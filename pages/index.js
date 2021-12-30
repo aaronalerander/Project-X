@@ -12,9 +12,7 @@ export default function Auth() {
 
   function onSubmit(e) {
     e.preventDefault();
-
     if (username.length === 0 || secret.length === 0) return;
-
     axios
       .put(
         "https://api.chatengine.io/users/",
@@ -29,7 +27,6 @@ export default function Auth() {
       <div className="auth-container">
         <form className="auth-form" onSubmit={(e) => onSubmit(e)}>
           <div className="auth-title">Project X</div>
-
           <div className="input-container">
             <input
               placeholder="Name"
@@ -37,7 +34,6 @@ export default function Auth() {
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
-
           <div className="input-container">
             <input
               type="password"
@@ -46,7 +42,6 @@ export default function Auth() {
               onChange={(e) => setSecret(e.target.value)}
             />
           </div>
-
           <button type="submit" className="submit-button">
             Login / Sign Up
           </button>
