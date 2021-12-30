@@ -5,6 +5,11 @@ import dynamic from "next/dynamic";
 import { Context } from "../context";
 import axios from "axios";
 
+import useSWR from "swr";
+//import { Socket } from "react-chat-engine";
+// import fetcher from "../utils/fetcher";
+// import fetcher from "../utils/fetcher";
+
 const ChatEngine = dynamic(() =>
   import("react-chat-engine").then((module) => module.ChatEngine)
 );
@@ -17,6 +22,10 @@ const ChatEngineWrapper = dynamic(() =>
 const ChatSocket = dynamic(() =>
   import("react-chat-engine").then((module) => module.ChatSocket)
 );
+
+const Socket = dynamic(() =>
+  import("react-chat-engine").then((module) => module.Socket)
+);
 const ChatFeed = dynamic(() =>
   import("react-chat-engine").then((module) => module.ChatFeed)
 );
@@ -26,6 +35,25 @@ export default function Chats() {
   const [showChat, setShowChat] = useState(false);
   const [title, setTitle] = useState("");
   const router = useRouter();
+
+  const fetcher = async () => {
+    let responce = await axios
+      .get("https://api.chatengine.io/chats/", {
+        headers: {
+          "Project-ID": "27e66807-2beb-4656-9292-e6e821608ab9",
+          "User-Name": username,
+          "User-Secret": secret,
+        },
+      })
+      .catch((error) => console.log(error));
+
+    console.log("hi fetach");
+    console.log(responce.data);
+    return responce.data;
+  };
+
+  //const { data } = useSWR("getChats", fetcher, { refreshInterval: 1000 });
+  const { data } = useSWR("getChats", fetcher);
 
   async function createChat(userNamesArray) {
     let responce = await axios
@@ -81,17 +109,12 @@ export default function Chats() {
     if (username.length === 0 || secret.length === 0) router.push("/");
   });
 
-  if (!showChat) return <div />;
-
+  if (!showChat || !data) return <div />;
+  //82737
+  //ca-945fa971-2859-4787-bda4-f29fc88946c4
   return (
     <div className="background-chat">
       <ChatEngineWrapper>
-        <ChatSocket
-          projectID="27e66807-2beb-4656-9292-e6e821608ab9"
-          chatID="82737"
-          chatAccessKey="ca-945fa971-2859-4787-bda4-f29fc88946c4"
-          senderUsername={username}
-        />
         <div className="flex-box">
           <h1 style={{ marginRight: "20px" }}>Project x</h1>
           <form className="auth-form" onSubmit={(e) => onAddChat(e)}>
@@ -111,14 +134,59 @@ export default function Chats() {
           </form>
         </div>
 
+        {/* <Socket
+          projectID="27e66807-2beb-4656-9292-e6e821608ab9"
+          userName={username}
+          userSecret={secret}
+        /> */}
+
+        {data.map((chat) => console.log(chat))}
+        <div className="flex-box">
+          {data.map((chat) => (
+            <div>
+              <h1>{chat.id}</h1>
+              {/* <ChatSocket
+                key={chat.id}
+                projectID="27e66807-2beb-4656-9292-e6e821608ab9"
+                chatID={chat.id}
+                chatAccessKey={chat.access_key}
+                senderUsername={username}
+              /> */}
+
+              <Socket
+                projectID="27e66807-2beb-4656-9292-e6e821608ab9"
+                userName={username}
+                userSecret={secret}
+              />
+
+              <div className="flex-box">
+                <div className="chat-container">
+                  <ChatFeed
+                    key={chat.id}
+                    activeChat={chat.id}
+                    renderNewMessageForm={() => <MessageFormSocial />}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/*  
+        <ChatSocket
+          projectID="27e66807-2beb-4656-9292-e6e821608ab9"
+          chatID="83129"
+          chatAccessKey="ca-0753ddf1-7f47-4f7b-879a-64d565a0f1b5"
+          senderUsername={username}
+        />
+
         <div className="flex-box">
           <div className="chat-container">
             <ChatFeed
-              activeChat="82737"
+              activeChat="83129"
               renderNewMessageForm={() => <MessageFormSocial />}
             />
           </div>
-        </div>
+        </div> */}
       </ChatEngineWrapper>
     </div>
   );
